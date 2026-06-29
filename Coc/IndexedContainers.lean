@@ -91,6 +91,20 @@ structure ContHom (c d : Cont) : Type 1 where
 
 infixr:25 " ⇒ " => ContHom
 
+def ContHom.natTrans {c d : Cont} (m : c ⇒ d) (X : Type) : ⟦ c ⟧ X → ⟦ d ⟧ X :=
+  fun ⟨a, g⟩ => ⟨m.shapeMap a, g ∘ m.posMap a⟩
+
+-- 1-position container: shape Unit, one position
+def Cont1 : Cont := Unit ▹ fun _ => Unit
+
+-- 2-position container: shape Unit, two positions
+def Cont2 : Cont := Unit ▹ fun _ => Bool
+
+-- morphism Cont1 ⇒ Cont2: duplicate the single element into both positions
+def dup : Cont1 ⇒ Cont2 :=
+  { shapeMap := fun () => ()
+    posMap   := fun () _ => () }
+
 -- container of vectors of length n
 def ContVec (α : Type) : Cont :=
   Nat ▹ fun n => Vec α n
