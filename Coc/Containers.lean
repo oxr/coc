@@ -52,22 +52,6 @@ def wrec {α : Type}{β : α → Type}(C : W α β → Type)
   | W.sup a f => h a f (fun x => wrec C h (f x))
 
 
-inductive IdType {A : Type}(x : A) : {B : Type} → B → Type where
-  | refl : IdType x x
-
-
-
-def subst {A : Type}(P : A → Type){x : A}{y : A}
-  : IdType x y → P x → P y
-  | .refl , x => x
-
-infixl:75 " ≅ " => IdType
-
-#check 3 ≅ 4
-
-def equiv {A : Type} : A → A → Type := fun x y => x ≅ y
-
-infixl:75 " ≡ " => equiv
 
 structure Cont : Type 1 where
   (α : Type)
@@ -95,15 +79,16 @@ def ContHom.natTrans {c d : Cont} (m : c ⇒ d) (X : Type) : ⟦ c ⟧ X → ⟦
   fun ⟨a, g⟩ => ⟨m.shapeMap a, g ∘ m.posMap a⟩
 
 -- 1-position container: shape Unit, one position
-def Cont1 : Cont := Unit ▹ fun _ => Unit
+def Cont1 : Cont := Unit ▹ fun  _ => Unit
 
--- 2-position container: shape Unit, two positions
 def Cont2 : Cont := Unit ▹ fun _ => Bool
 
--- morphism Cont1 ⇒ Cont2: duplicate the single element into both positions
-def dup : Cont1 ⇒ Cont2 :=
-  { shapeMap := fun () => ()
-    posMap   := fun () _ => () }
+def ContMorphDup : Cont1 ⇒ Cont2 :=
+  {
+    shapeMap := fun _ => (),
+    posMap := fun _ => fun _ => ()
+  }
+
 
 -- container of vectors of length n
 def ContVec (α : Type) : Cont :=
