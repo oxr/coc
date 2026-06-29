@@ -38,3 +38,59 @@ mutual
   | ne {n} : NeLam n → NfLam n
 
 end
+
+
+-----------------
+
+inductive W (α : Type) (β : α → Type) : Type where
+  | sup : (a : α) → (f : β a → W α β) → W α β
+
+
+def wrec {α : Type}{β : α → Type}(C : W α β → Type)
+  (h : (a : α) → (f : β a → W α β) → ((x : β a) → C (f x)) → C (W.sup a f))
+  : (t : W α β) → C t
+  | W.sup a f => h a f (fun x => wrec C h (f x))
+
+
+inductive IdType {A : Type}(x : A) : {B : Type} → B → Type where
+  | refl : IdType x x
+
+
+
+def subst {A : Type}(P : A → Type){x : A}{y : A}
+  : IdType x y → P x → P y
+  | .refl , x => x
+
+infixl:75 " ≅ " => IdType
+
+#check 3 ≅ 4
+
+def equiv {A : Type} : A → A → Type := fun x y => x ≅ y
+
+infixl:75 " ≡ " => equiv
+
+structure Cont : Type 1 where
+  (α : Type)
+  (β : α → Type)
+
+infixl:75 " ▹ " => Cont.mk
+#check (Nat ▹ fun _ => Bool)
+
+
+def contExt (c : Cont) (X : Type) : Type :=
+  Σ a : c.α, c.β a → X
+
+notation "⟦" c "⟧" => contExt c
+
+instance (c : Cont) : Functor (contExt c) where
+  map f := fun ⟨a, g⟩ => ⟨a, f ∘ g⟩
+
+structure ContHom (c d : Cont) : Type 1 where
+  shapeMap : c.α → d.α
+  posMap   : (a : c.α) → d.β (shapeMap a) → c.β a
+
+infixr:25 " ⇒ " => ContHom
+
+-- container of vectors of length n
+def ContVec (α : Type) : Cont :=
+  Nat ▹ fun n => Vec α n
